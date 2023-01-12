@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test:ui": "cypress open",
+    "test:headless": "cypress run",
     "test:headless:chrome": "cypress run --browser chrome",
     "test:headless:firefox": "cypress run --browser firefox --spec cypress/e2e/navegacion.cy.js"
   },
