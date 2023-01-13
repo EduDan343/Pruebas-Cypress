@@ -1,4 +1,4 @@
-describe('Interactuar con los elementos', {browser: 'firefox'} , function() {
+describe('Interactuar con los elementos', {browser: '!firefox'} , function() {
     
     Cypress.on('uncaught:exception', (err, runnable) =>{
         //returnint alce here prevents Cypress from failing the test
@@ -116,11 +116,83 @@ describe('Interactuar con los elementos', {browser: 'firefox'} , function() {
         cy.get('#react-select-4-option-4').click()
     })
 
-    it.only('Interactuando con tablas', function(){
+    it('Interactuando con tablas', function(){
+        cy.clearCookies()
         cy.visit('https://www.w3schools.com/html/html_tables.asp')
         cy.get('#customers').find('th').each(($el, index, $list)=> {
             cy.log($el.text())
         })
+
+        cy.get('#customers')
+            .find('th')
+            .first()  //obtiene el primer elemento
+            .invoke('text')
+            .should('equal', 'Company')
+        
+            cy.get('#customers').find('tr').should('have.length', 7)
+
+            // cy.get('#customers').find('tr').eq(1).find('td').eq(1).invoke('text').should('equal','Maria Anders')
+            //otra forma de hacerlo si no queremos utilizar invoke
+            cy.get('#customers').find('tr').eq(1).find('td').eq(1).then( ($el, index, $lista) => {
+                const texto = $el.text()
+                expect(texto).to.equal('Maria Anders')
+            })
+
+    })
+
+    it('Interactuando con date pickers', function(){
+        cy.visit('https://material.angular.io/components/datepicker/overview')
+        cy.get('datepicker-overview-example').find('input').eq(0).type('10/10/2010',{force: true})
+        cy.get('datepicker-overview-example').find('svg').click({force: true})
+    })
+
+    it('interactuando con modals', function(){
+        cy.visit('/modal-dialogs')
+        cy.get('#showSmallModal').click()
+        cy.get('#closeSmallModal').click()
+    })
+
+    it('Interactuando con popups', function() {
+        cy.visit('/alerts')
+        
+        // const stub = cy.stub()  //sirve para interceptar la confirmacion 
+        // cy.on('window:confirm', stub)  //dialogo para aceptar o rechazar los eventos
+
+        // cy.get('#confirmButton').click().then( ()=> {
+        //     expect(stub.getCall(0)).to.be.calledWith('Do you confirm action?')  //ha sido llamado este metodo
+        // })
+
+        //otra forma de hacer lo anterior
+        // cy.get('#confirmButton').click()
+        // cy.on('window:confirm', (confirm)=> {
+        //     expect(confirm).to.equal('Do you confirm action?')
+        // })
+        // cy.contains('You selected Ok').should('exist')  //validamos que aparesca este elemento
+
+
+        //validar si la alerta fue rechazada
+        cy.get('#confirmButton').click()
+        cy.on('window:confirm', (confirm)=> {
+            expect(confirm).to.equal('Do you confirm action?')
+            return false //para que  alerta regrese un falso o dicho de otra forma rechaze la alerta
+        })
+        cy.contains('You selected Cancel').should('exist')
+    })
+
+    it('Interactuando con los tooltip', function() {
+        cy.visit('/tool-tips')
+        cy.get('#toolTipButton').trigger('mouseover')  //para disparar eventos se usa trigger
+        cy.contains('You hovered over the Button').should('exist')
+        cy.get('#toolTipButton').trigger('mouseout')  //quitamos el evento de hover
+        cy.contains('You hovered over the Button').should('not.exist')  //evaluamos ahora que el tooltip no exista
+    })
+
+    it.only('Interactuand con drag and drop', function() {
+        cy.visit('/dragabble')
+        cy.get('#dragBox')
+            .trigger('mousedown', {which: 1, pageX:600, pageY:100})
+            .trigger('mousemove', { which: 1, pageX:600, pageY:600})
+            .trigger('mouseup')  //deshacer click
     })
 
 })
